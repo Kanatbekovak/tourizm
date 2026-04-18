@@ -112,3 +112,62 @@ code {
 
 
 @import "tailwindcss";
+
+@theme {
+  --color-kg-gold: #FFD100;
+  --color-kg-gold-dark: #B89600;
+  --color-kg-red: #C1272D;
+}
+
+/* --- РОСКОШНЫЙ ЗОЛОТОЙ ОРНАМЕНТ --- */
+@keyframes scrollOrnament {
+  from { background-position: 0 0; }
+  to { background-position: -100px 0; }
+}
+
+.kg-gold-divider {
+  height: 70px;
+  width: 100%;
+  /* Золотой градиент как на монетах */
+  background: linear-gradient(180deg, #FFD100 0%, #F5C400 50%, #D4A700 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid #FFF5CC;
+  border-bottom: 2px solid #8A6D00;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.kg-gold-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Красный узор на золотом фоне - очень тонко и аккуратно */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='70' viewBox='0 0 100 70'%3E%3Cpath d='M50 15c-6 0-11 5-11 11 0 4 3 8 7 10-4 3-7 7-7 12 0 7 5 12 11 12s11-5 11-12c0-5-3-9-7-12 4-2 7-6 7-10 0-6-5-11-11-11zm0 4c4 0 7 3 7 7s-3 7-7 7-7-3-7-7 3-7 7-7z' fill='%23C1272D' fill-opacity='0.15'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 70px;
+  animation: scrollOrnament 25s linear infinite;
+}
+
+/* Добавляем блик, который проходит по золоту */
+.kg-gold-divider::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shine 4s infinite;
+}
+
+@keyframes shine {
+  to { left: 200%; }
+}
+
+@keyframes slideLogos {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.logo-track {
+  display: flex;
+  width: calc(250px * 10); /* Ширина должна быть в два раза больше списка */
+  animation: slideLogos 20s linear infinite;
+}
