@@ -4,6 +4,8 @@ import { Input, Badge, Avatar } from 'antd';
 import { SearchOutlined, UserOutlined, EnvironmentOutlined } from '@ant-design/icons';
 
 const Navbar = () => {
+    const userData = JSON.parse(localStorage.getItem('user_data'));
+    
   return (
     <nav className="sticky top-0 z-50 w-full px-6 py-4">
       <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-kg-gold/20 px-6 py-3 flex items-center justify-between">
@@ -34,12 +36,15 @@ const Navbar = () => {
             placeholder="Поиск приключений..." 
             className="hidden lg:flex w-64 rounded-xl border-none bg-gray-100 focus:bg-white transition-all"
           />
-          <Link to="/account" className="flex items-center gap-2 group">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold group-hover:text-kg-red transition-colors">Аккаунт</p>
-            </div>
-            <Avatar icon={<UserOutlined />} className="bg-kg-red shadow-md" />
-          </Link>
+          <Link to={userData ? "/account" : "/auth"} className="flex items-center gap-2 group">
+      <div className="text-right hidden sm:block">
+        <p className="text-sm font-bold group-hover:text-kg-red transition-colors">
+          {userData ? userData.name : "Войти"}
+        </p>
+      </div>
+      <Avatar icon={<UserOutlined />} className="bg-kg-red shadow-md" />
+    </Link>
+          
         </div>
       </div>
     </nav>
