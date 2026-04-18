@@ -13,18 +13,16 @@ export const tourService = {
   },
 
   getCategories: async () => {
-    // endpoint for list is not present yet, fallback to create-known flows on UI
-    // keep this function for future compatibility
     return [];
+  },
+
+  createCategory: async (payload) => {
+    const response = await api.post('/categories/', payload);
+    return response.data;
   },
 
   createTour: async (tourData) => {
     const response = await api.post('/marketplace/tours', tourData);
-    return response.data;
-  },
-
-  deleteTour: async (tourId) => {
-    const response = await api.delete(`/marketplace/tours/${tourId}`);
     return response.data;
   },
 

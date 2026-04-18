@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Row,
   Col,
@@ -14,9 +14,9 @@ import {
   Checkbox,
   Radio,
   Space,
+  Rate,
   message,
   Form,
-  Popconfirm,
 } from 'antd';
 import {
   EnvironmentOutlined,
@@ -27,18 +27,30 @@ import {
   FilterOutlined,
   GlobalOutlined,
   PlusOutlined,
-  DeleteOutlined,
+  LikeOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import { tourService } from '../services/tourService';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+const TOUR_ENGAGEMENT_KEY = 'tour_engagement_v1';
+
+const getViewerId = (role, userData) => {
+  if (userData?.id) return `${role}-${userData.id}`;
+  const existing = localStorage.getItem('guest_session_id');
+  if (existing) return existing;
+  const id = `guest-${Date.now()}`;
+  localStorage.setItem('guest_session_id', id);
+  return id;
+};
 
 const ToursPage = () => {
   const role = localStorage.getItem('role') || 'guest';
   const userData = JSON.parse(localStorage.getItem('user_data') || 'null');
   const isPartner = role === 'partner';
+  const viewerId = getViewerId(role, userData);
 
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -52,13 +64,31 @@ const ToursPage = () => {
   const [dateRange, setDateRange] = useState([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [creatingTour, setCreatingTour] = useState(false);
-  const [deletingTourId, setDeletingTourId] = useState(null);
   const [buySeats, setBuySeats] = useState(1);
   const [buyUserId, ] = useState(userData?.id || 1);
   const [aiQuestion, setAiQuestion] = useState('');
   const [aiAnswer, setAiAnswer] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [addTourForm] = Form.useForm();
+  const [commentDrafts, setCommentDrafts] = useState({});
+  const [engagement, setEngagement] = useState({});
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(TOUR_ENGAGEMENT_KEY);
+      if (raw) setEngagement(JSON.parse(raw));
+    } catch {
+      setEngagement({});
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(TOUR_ENGAGEMENT_KEY, JSON.stringify(engagement));
+  }, [engagement]);
+
+  useEffect(() => {
+    loadTours();
+  }, []);
 
   const loadTours = async () => {
     setLoading(true);
@@ -109,19 +139,31 @@ const ToursPage = () => {
 
   const handleAddTour = async (values) => {
     if (!isPartner) return;
+    if (!userData?.id) {
+      message.error('Не удалось определить партнера. Перезайдите в аккаунт.');
+      return;
+    }
 
     setCreatingTour(true);
     try {
+      const category = await tourService.createCategory({
+        name: values.category,
+        description: values.categoryDescription || values.category,
+      });
+
+      const startDate = values.dateRange?.[0];
+      const endDate = values.dateRange?.[1];
+
       await tourService.createTour({
+        partner_id: Number(userData.id),
+        category_id: Number(category.id),
         title: values.title,
         description: values.description,
         destination: values.location,
-        category: values.category,
         price: Number(values.price),
-        promo_price: values.promoPrice ? Number(values.promoPrice) : null,
+        start_date: startDate ? startDate.toISOString() : null,
+        end_date: endDate ? endDate.toISOString() : null,
         slots_available: Number(values.slots),
-        image_url: values.imageUrl,
-        partner_id: userData?.id,
       });
       message.success('Тур добавлен');
       setAddModalOpen(false);
@@ -134,19 +176,56 @@ const ToursPage = () => {
     }
   };
 
-  const handleDeleteTour = async (tourId) => {
-    if (!isPartner) return;
+  const toggleLike = (tourId) => {
+    setEngagement((prev) => {
+      const current = prev[tourId] || { likes: [], comments: [], ratings: [] };
+      const hasLiked = current.likes.includes(viewerId);
+      const likes = hasLiked
+        ? current.likes.filter((id) => id !== viewerId)
+        : [...current.likes, viewerId];
 
-    setDeletingTourId(tourId);
-    try {
-      await tourService.deleteTour(tourId);
-      message.success('Тур удален');
-      loadTours();
-    } catch (error) {
-      message.error(error.message || 'Не удалось удалить тур');
-    } finally {
-      setDeletingTourId(null);
-    }
+      return {
+        ...prev,
+        [tourId]: { ...current, likes },
+      };
+    });
+  };
+
+  const setRating = (tourId, value) => {
+    setEngagement((prev) => {
+      const current = prev[tourId] || { likes: [], comments: [], ratings: [] };
+      const ratingsWithoutViewer = current.ratings.filter((r) => r.userId !== viewerId);
+      return {
+        ...prev,
+        [tourId]: {
+          ...current,
+          ratings: [...ratingsWithoutViewer, { userId: viewerId, value }],
+        },
+      };
+    });
+  };
+
+  const addComment = (tourId) => {
+    const text = (commentDrafts[tourId] || '').trim();
+    if (!text) return;
+
+    const author = userData?.name || userData?.full_name || userData?.contact_email || 'Гость';
+
+    setEngagement((prev) => {
+      const current = prev[tourId] || { likes: [], comments: [], ratings: [] };
+      return {
+        ...prev,
+        [tourId]: {
+          ...current,
+          comments: [
+            ...current.comments,
+            { id: `${Date.now()}`, author, text, createdAt: new Date().toISOString() },
+          ],
+        },
+      };
+    });
+
+    setCommentDrafts((prev) => ({ ...prev, [tourId]: '' }));
   };
 
   const filteredTours = useMemo(() => {
@@ -320,27 +399,51 @@ const ToursPage = () => {
                           />
                         </>
                       ) : (
-                        <Popconfirm
-                          title="Удалить тур?"
-                          description="Это действие нельзя отменить"
-                          onConfirm={(e) => {
-                            e?.stopPropagation?.();
-                            handleDeleteTour(tour.id);
-                          }}
-                          okText="Удалить"
-                          cancelText="Отмена"
-                        >
+                        <>
                           <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            loading={deletingTourId === tour.id}
-                            className="w-full rounded-xl font-bold h-12"
-                            onClick={(e) => e.stopPropagation()}
+                            block
+                            className="bg-black text-white border-none rounded-xl font-bold h-12 transition-all"
+                            onClick={(e) => { e.stopPropagation(); setSelectedTour(tour); }}
                           >
-                            Удалить тур
+                            Открыть
                           </Button>
-                        </Popconfirm>
+                        </>
                       )}
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-50">
+                      <div className="flex items-center gap-4 mb-3">
+                        <Button
+                          size="small"
+                          icon={<LikeOutlined />}
+                          onClick={() => toggleLike(tour.id)}
+                          className={`${(engagement[tour.id]?.likes || []).includes(viewerId) ? '!bg-kg-gold !text-black !border-kg-gold' : ''}`}
+                        >
+                          {(engagement[tour.id]?.likes || []).length}
+                        </Button>
+                        <Rate
+                          allowHalf
+                          character={<StarOutlined />}
+                          value={(() => {
+                            const allRatings = engagement[tour.id]?.ratings || [];
+                            if (allRatings.length === 0) return 0;
+                            const avg = allRatings.reduce((acc, cur) => acc + cur.value, 0) / allRatings.length;
+                            return Number(avg.toFixed(1));
+                          })()}
+                          onChange={(value) => setRating(tour.id, value)}
+                        />
+                        <Text className="text-xs text-gray-500">
+                          {engagement[tour.id]?.comments?.length || 0} комментариев
+                        </Text>
+                      </div>
+                      <Space.Compact style={{ width: '100%' }}>
+                        <Input
+                          placeholder="Оставьте комментарий"
+                          value={commentDrafts[tour.id] || ''}
+                          onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [tour.id]: e.target.value }))}
+                          onPressEnter={() => addComment(tour.id)}
+                        />
+                        <Button onClick={() => addComment(tour.id)}>Отправить</Button>
+                      </Space.Compact>
                     </div>
                   </Card>
                 </Col>
@@ -380,6 +483,21 @@ const ToursPage = () => {
               <Tag icon={<ClockCircleOutlined />}>{selectedTour.duration || 'Тур'}</Tag>
             </div>
             <Paragraph className="text-gray-500 text-lg">{selectedTour.description}</Paragraph>
+            <div className="mb-5">
+              <Text strong>Отзывы и комментарии</Text>
+              <div className="mt-2 max-h-32 overflow-auto pr-1">
+                {(engagement[selectedTour.id]?.comments || []).length === 0 ? (
+                  <Text className="text-gray-500">Пока нет отзывов</Text>
+                ) : (
+                  (engagement[selectedTour.id]?.comments || []).map((comment) => (
+                    <div key={comment.id} className="py-2 border-b border-gray-100">
+                      <Text strong>{comment.author}: </Text>
+                      <Text>{comment.text}</Text>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
             {!isPartner && (
               <div className="flex gap-4 mt-8">
                 <InputNumber min={1} value={buySeats} onChange={(v) => setBuySeats(Number(v) || 1)} className="h-14 rounded-2xl" />
@@ -414,14 +532,14 @@ const ToursPage = () => {
           <Form.Item name="category" label="Категория" rules={[{ required: true, message: 'Введите категорию' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="imageUrl" label="URL картинки">
+          <Form.Item name="categoryDescription" label="Описание категории">
             <Input />
+          </Form.Item>
+          <Form.Item name="dateRange" label="Даты тура" rules={[{ required: true, message: 'Выберите даты тура' }]}>
+            <RangePicker style={{ width: '100%' }} />
           </Form.Item>
           <Space style={{ width: '100%' }}>
             <Form.Item name="price" label="Цена" rules={[{ required: true, message: 'Введите цену' }]} style={{ flex: 1 }}>
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="promoPrice" label="Промо-цена" style={{ flex: 1 }}>
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item name="slots" label="Мест" rules={[{ required: true, message: 'Введите кол-во мест' }]} style={{ flex: 1 }}>
