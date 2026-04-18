@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Typography, Row, Col, Modal, Button, Tag } from 'antd';
-import OrnamentDivider from '../components/OrnamentDivider';
 
 const { Title, Text } = Typography;
 
@@ -62,7 +61,6 @@ const TurAgents = () => {
         </Row>
       </section>
 
-      <OrnamentDivider />
 
       {/* Модальное окно (Popup) */}
       <Modal
