@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Badge, Avatar } from 'antd';
-import { SearchOutlined, UserOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Input, Avatar } from 'antd';
+import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 
 const Navbar = () => {
   return (
@@ -22,9 +22,6 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-gray-600">
           <Link to="/tours" className="hover:text-kg-red transition-colors">Туры</Link>
           <Link to="/agencies" className="hover:text-kg-red transition-colors">Турагентства</Link>
-          <Link to="/map" className="hover:text-kg-red flex items-center gap-1">
-            <EnvironmentOutlined /> Карта
-          </Link>
         </div>
 
         {/* Поиск и Аккаунт */}
@@ -34,7 +31,7 @@ const Navbar = () => {
             placeholder="Поиск приключений..." 
             className="hidden lg:flex w-64 rounded-xl border-none bg-gray-100 focus:bg-white transition-all"
           />
-          <Link to="/account" className="flex items-center gap-2 group">
+          <Link to="/tours" className="flex items-center gap-2 group">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold group-hover:text-kg-red transition-colors">Аккаунт</p>
             </div>

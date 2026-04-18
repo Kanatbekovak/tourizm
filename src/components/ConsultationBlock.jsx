@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
-import { Input, Button, Typography } from 'antd';
+import { Input, Button, Typography, message, Modal } from 'antd';
 import { RobotOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { tourService } from '../services/tourService';
 
 const { Title, Paragraph } = Typography;
 
 const ConsultationBlock = () => {
   const [question, setQuestion] = useState('');
-  const navigate = useNavigate();
+  const [answer, setAnswer] = useState('');
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleStartConsultation = () => {
+  const handleStartConsultation = async () => {
     if (!question.trim()) return;
-    // Переход на страницу чата с передачей вопроса
-    navigate('/chat', { state: { initialMessage: question } });
+    setLoading(true);
+    try {
+      const data = await tourService.sendChatMessage(question.trim(), 1);
+      setAnswer(data.answer || 'Нет ответа');
+      setOpen(true);
+    } catch (error) {
+      message.error(error.message || 'Ошибка консультации');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,6 +69,7 @@ const ConsultationBlock = () => {
                 size="large" 
                 block 
                 onClick={handleStartConsultation}
+                loading={loading}
                 className="h-16 mt-4 rounded-2xl bg-kg-red hover:bg-red-700 border-none font-black text-lg uppercase tracking-widest flex items-center justify-center transition-transform active:scale-95"
               >
                 Получить план <SendOutlined className="ml-2" />
@@ -68,6 +79,14 @@ const ConsultationBlock = () => {
         </div>
 
       </div>
+      <Modal
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        title="Ответ NomadAI"
+      >
+        <Paragraph>{answer}</Paragraph>
+      </Modal>
     </section>
   );
 };

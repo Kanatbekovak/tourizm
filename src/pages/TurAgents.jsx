@@ -1,30 +1,35 @@
-import React, { useState } from 'react';
-import { Typography, Row, Col, Modal, Button, Tag } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Typography, Row, Col, Modal, Button, Tag, message } from 'antd';
+import { tourService } from '../services/tourService';
 
 const { Title, Text } = Typography;
 
 const TurAgents = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState(null);
+  const [agencies, setAgencies] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const agencies = [
-    {
-      id: 1,
-      name: "Bishkek Travel",
-      description: "Лидеры по внутреннему туризму в Кыргызстане с 10-летним стажем.",
-      logo: "https://images.unsplash.com/photo-1569429593410-b498b3fb3387", // Замените на реальные лого
-      rating: "4.9",
-      specialization: "Горные походы"
-    },
-    {
-      id: 2,
-      name: "Nomad Life",
-      description: "Аутентичные туры с проживанием в юртах и конными прогулками.",
-      logo: "https://images.unsplash.com/photo-1544735716-392fe2489ffa",
-      rating: "5.0",
-      specialization: "Этно-туры"
-    }
-  ];
+  useEffect(() => {
+    const loadPartners = async () => {
+      setLoading(true);
+      try {
+        const data = await tourService.getPartners();
+        const normalized = data.map((item, idx) => ({
+          ...item,
+          logo: `https://picsum.photos/seed/partner-${idx + 1}/300/300`,
+          specialization: item.description || 'Туры по Кыргызстану',
+        }));
+        setAgencies(normalized);
+      } catch (error) {
+        message.error(error.message || 'Не удалось загрузить партнеров');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPartners();
+  }, []);
 
   const handleOpenAgency = (agency) => {
     setSelectedAgency(agency);
@@ -53,12 +58,13 @@ const TurAgents = () => {
                 </div>
                 <Tag color="gold" className="mb-2 uppercase font-bold border-none">{agency.specialization}</Tag>
                 <h3 className="font-black text-2xl mb-2 group-hover:text-kg-gold transition-colors">{agency.name}</h3>
-                <div className="text-kg-gold font-bold mb-4">★ {agency.rating}</div>
+                <div className="text-kg-gold font-bold mb-4">★ {agency.rating || '0.0'}</div>
                 <Button type="text" className="text-kg-red font-bold p-0">Посмотреть туры →</Button>
               </div>
             </Col>
           ))}
         </Row>
+        {loading && <Text className="text-gray-500">Загрузка партнеров...</Text>}
       </section>
 
 
