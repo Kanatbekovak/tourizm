@@ -1,6 +1,6 @@
 import React from 'react';
 import { Carousel, Typography, Button, Row, Col, Rate } from 'antd';
-import OrnamentDivider from '../components/OrnamentDivider';
+
 import ConsultationBlock from '../components/ConsultationBlock';
 
 const { Title, Text } = Typography;
@@ -10,7 +10,7 @@ const MarketplacePage = () => {
   const hotTours = [
     { id: 1, title: "ЗОЛОТОЕ НАСЛЕДИЕ", sub: "КОЧЕВНИКОВ", img: "https://images.unsplash.com/photo-1569429593410-b498b3fb3387" },
     { id: 2, title: "ТАЙНЫ НЕБЕСНЫХ", sub: "ГОР ТЯНЬ-ШАНЯ", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa" },
-    { id: 3, title: "БЕРЕГ ЛЕГЕНД", sub: "ИССЫК-КУЛЯ", img: "https://images.unsplash.com/photo-1569429593410-b498b3fb3387" }
+    { id: 3, title: "БЕРЕГ ЛЕГЕНД", sub: "ИССЫК-КУЛЯ", img: "https://plus.unsplash.com/premium_photo-1663045423397-eff0984894e5?q=80&w=1074&auto=format&fit=crop" }
   ];
 
   return (
@@ -46,8 +46,7 @@ const MarketplacePage = () => {
         </Carousel>
       </section>
 
-      {/* Золотая полоска с орнаментом */}
-      <OrnamentDivider />
+    
 
       {/* 2. ПОПУЛЯРНЫЕ ТУРЫ (Сетка) */}
       <section className="max-w-7xl mx-auto px-6 py-12">
@@ -85,6 +84,11 @@ const MarketplacePage = () => {
           ))}
         </Row>
       </section>
+
+      {/* 3. ИИ-КОНСУЛЬТАЦИЯ */}
+      <div className="max-w-7xl mx-auto px-8 pb-24">
+        <ConsultationBlock />
+      </div>
 
       {/* 3. БЕСКОНЕЧНАЯ КАРУСЕЛЬ ПАРТНЕРОВ */}
       <section className="py-16 bg-white overflow-hidden border-y border-gray-50">
@@ -132,10 +136,6 @@ const MarketplacePage = () => {
       </section>
 
 
-      {/* 3. ИИ-КОНСУЛЬТАЦИЯ */}
-      <div className="max-w-7xl mx-auto px-8 pb-24">
-        <ConsultationBlock />
-      </div>
 
     </div>
   );
