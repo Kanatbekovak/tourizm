@@ -14,7 +14,7 @@ function App() {
         {/* Вот эта строка связывает адрес "/" с твоей страницей */}
         <Route path="/" element={<MarketplacePage />} />
         <Route path="/agencies" element={<TurAgents />} />
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/account" element={<AuthPage />} />
         <Route path="/tours" element={<ToursPage />} />
         {/* Если у тебя есть страница чата, добавь её тоже: */}
         {/* <Route path="/chat" element={<ChatPage />} /> */}

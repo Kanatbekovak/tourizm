@@ -11,13 +11,11 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onFinish = async (values) => {
+const onFinish = async (values) => {
     setLoading(true);
     try {
       let response;
-      
       if (values.role === 'tourist') {
-        // Эндпоинты для обычных пользователей
         const endpoint = isLogin ? '/users/login' : '/users/register';
         const payload = isLogin 
           ? { email: values.email, password: values.password } 
@@ -25,11 +23,11 @@ const AuthPage = () => {
               full_name: values.username, 
               email: values.email, 
               password: values.password, 
-              age: 18 // Ставим по дефолту или добавь Input в форму
+              age: 25 
             };
         response = await api.post(endpoint, payload);
       } else {
-        // Эндпоинты для партнеров
+        // РЕГИСТРАЦИЯ/ВХОД ПАРТНЕРА
         const endpoint = isLogin ? '/partners/login' : '/partners/';
         const payload = isLogin 
           ? { contact_email: values.email, password: values.password } 
@@ -37,40 +35,52 @@ const AuthPage = () => {
               name: values.username, 
               contact_email: values.email, 
               password: values.password,
-              description: "Новый партнер",
-              address: "Бишкек" 
+              description: "Expert tour provider",
+              address: "Bishkek, Kyrgyzstan",
+              website: "https://nomad-travel.kg", // Обязательное поле для 422
+              phone_number: "+996700123456",     // Обязательное поле для 422
+              rating: 5.0
             };
         response = await api.post(endpoint, payload);
       }
 
-      message.success(isLogin ? 'С возвращением!' : 'Регистрация прошла успешно!');
-      
-      // Сохраняем данные (id пригодится для покупок и создания туров)
+      message.success(isLogin ? 'Успешный вход!' : 'Аккаунт создан!');
       localStorage.setItem('user_data', JSON.stringify(response.data));
       localStorage.setItem('role', values.role);
-      
       navigate('/tours');
+
     } catch (error) {
-      // Ошибка выведется через интерцептор в api.js, если ты его добавил
-      console.error(error);
+      console.error("Полная ошибка:", error.response?.data);
+      
+      // ИСПРАВЛЕНИЕ ОШИБКИ REACT: Извлекаем только текст
+      let errorText = "Ошибка сервера";
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        // Если detail - это массив (как у FastAPI), берем сообщение из первого элемента
+        errorText = Array.isArray(detail) 
+          ? `${detail[0].loc[1]}: ${detail[0].msg}` 
+          : detail;
+      }
+      
+      message.error(String(errorText)); // String() гарантирует, что мы не передаем объект
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = async (values) => {
-  try {
-    const res = await api.post('/auth/login', values);
-    // Сохраняем данные пользователя (id, имя, токен)
-    localStorage.setItem('user_data', JSON.stringify(res.data.user));
-    localStorage.setItem('token', res.data.token);
+//   const handleLogin = async (values) => {
+//   try {
+//     const res = await api.post('/auth/login', values);
+//     // Сохраняем данные пользователя (id, имя, токен)
+//     localStorage.setItem('user_data', JSON.stringify(res.data.user));
+//     localStorage.setItem('token', res.data.token);
     
-    message.success("Добро пожаловать!");
-    navigate('/tours'); // Перенаправляем на туры после входа
-  } catch (err) {
-    message.error("Ошибка входа");
-  }
-};
+//     message.success("Добро пожаловать!");
+//     navigate('/tours'); // Перенаправляем на туры после входа
+//   } catch (err) {
+//     message.error("Ошибка входа");
+//   }
+// };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFFDF9] py-20 px-4">

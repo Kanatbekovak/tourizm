@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Badge, Avatar } from 'antd';
-import { SearchOutlined, UserOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Input, Avatar } from 'antd';
+import { SearchOutlined, UserOutlined,EnvironmentOutlined } from '@ant-design/icons';
 
 const Navbar = () => {
     const userData = JSON.parse(localStorage.getItem('user_data'));
@@ -44,7 +44,6 @@ const Navbar = () => {
       </div>
       <Avatar icon={<UserOutlined />} className="bg-kg-red shadow-md" />
     </Link>
-          
         </div>
       </div>
     </nav>

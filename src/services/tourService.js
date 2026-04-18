@@ -2,21 +2,42 @@ import api from "../api/axios";
 
 
 export const tourService = {
-  // Получить все туры для маркетплейса
-  getAllTours: async () => {
-    const response = await api.get('tours/');
+  getMarketplaceTours: async (params = {}) => {
+    const response = await api.get('/marketplace/tours', { params });
     return response.data;
   },
 
-  // Создать новый тур (для Партнера)
+  getPartners: async () => {
+    const response = await api.get('/partners/');
+    return response.data;
+  },
+
+  getCategories: async () => {
+    // endpoint for list is not present yet, fallback to create-known flows on UI
+    // keep this function for future compatibility
+    return [];
+  },
+
   createTour: async (tourData) => {
-    const response = await api.post('tours/', tourData);
+    const response = await api.post('/marketplace/tours', tourData);
     return response.data;
   },
 
-  // Отправить сообщение в ИИ-чат
-  sendChatMessage: async (tourId, message) => {
-    const response = await api.post('chat/', { tour_id: tourId, text: message });
+  deleteTour: async (tourId) => {
+    const response = await api.delete(`/marketplace/tours/${tourId}`);
     return response.data;
-  }
+  },
+
+  purchaseTour: async (payload) => {
+    const response = await api.post('/marketplace/purchase', payload);
+    return response.data;
+  },
+
+  sendChatMessage: async (message, userId = null) => {
+    const response = await api.post('/ai/consult', {
+      user_id: userId,
+      messages: [{ role: 'user', content: message }],
+    });
+    return response.data;
+  },
 };

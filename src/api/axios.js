@@ -2,17 +2,20 @@ import axios from 'axios';
 import { message } from 'antd';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000', // Согласно твоему гайду
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Глобальный перехватчик ошибок для уведомлений
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const msg = error.response?.data?.detail || "Произошла ошибка соединения";
+    const detail = error?.response?.data?.detail;
+    const msg = Array.isArray(detail)
+      ? detail.map((d) => d.msg).join(', ')
+      : (detail || error.message || 'Произошла ошибка соединения');
+    error.message = msg;
     message.error(msg);
     return Promise.reject(error);
   }
