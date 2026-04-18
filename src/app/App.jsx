@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// Проверь, чтобы пути к файлам были правильными!
 import MarketplacePage from "../pages/MarketplacePage.jsx"; 
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";

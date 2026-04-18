@@ -46,8 +46,7 @@ const MarketplacePage = () => {
         </Carousel>
       </section>
 
-      {/* Золотая полоска с орнаментом */}
-      <OrnamentDivider />
+    
 
       {/* 2. ПОПУЛЯРНЫЕ ТУРЫ (Сетка) */}
       <section className="max-w-7xl mx-auto px-6 py-12">
@@ -85,6 +84,11 @@ const MarketplacePage = () => {
           ))}
         </Row>
       </section>
+
+      {/* 3. ИИ-КОНСУЛЬТАЦИЯ */}
+      <div className="max-w-7xl mx-auto px-8 pb-24">
+        <ConsultationBlock />
+      </div>
 
       {/* 3. БЕСКОНЕЧНАЯ КАРУСЕЛЬ ПАРТНЕРОВ */}
       <section className="py-16 bg-white overflow-hidden border-y border-gray-50">
@@ -132,10 +136,6 @@ const MarketplacePage = () => {
       </section>
 
 
-      {/* 3. ИИ-КОНСУЛЬТАЦИЯ */}
-      <div className="max-w-7xl mx-auto px-8 pb-24">
-        <ConsultationBlock />
-      </div>
 
     </div>
   );
